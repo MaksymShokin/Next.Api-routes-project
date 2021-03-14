@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 
 import CommentList from './comment-list';
 import NewComment from './new-comment';
 import classes from './comments.module.css';
+import NotificationContext from '../../store/notification-context';
 
 function Comments(props) {
   const { eventId } = props;
+  const notificationCtx = useContext(NotificationContext);
 
   const [showComments, setShowComments] = useState(false);
 
@@ -14,6 +16,12 @@ function Comments(props) {
   }
 
   function addCommentHandler(commentData) {
+    notificationCtx.showNotification({
+      title: 'Loading...',
+      // message: 'Registering for newsletter.',
+      status: 'pending'
+    });
+
     fetch(`/api/${eventId}`, {
       method: 'POST',
       body: JSON.stringify({
@@ -24,7 +32,20 @@ function Comments(props) {
       }
     })
       .then(res => res.json())
-      .then(res => console.log(res));
+      .then(res => {
+        notificationCtx.showNotification({
+          title: 'Done',
+          message: 'Working',
+          status: 'success'
+        });
+      })
+      .catch(() =>
+        notificationCtx.showNotification({
+          title: 'Done',
+          message: 'Working',
+          status: 'error'
+        })
+      );
   }
 
   return (
